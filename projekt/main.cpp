@@ -1,10 +1,9 @@
 #include <iostream>
+#include "main.h"
 #include "main2.cpp"
+
 using namespace std;
 
-class Wpis{
-	
-};
 
 int main() {
 	int nr_operacji;
@@ -17,6 +16,30 @@ int main() {
 			cout << "Podaj typ operacji (wydatek/przychod): ";
 			cin >> typ_operacji;
 			cout << "Podaj kategorie operacji: ";
+			if(typ_operacji == "wydatek")
+			{
+				Wpis nowy_wydatek;
+				cout << "Podaj kategorie wydatku: ";
+				cin >> nowy_wydatek.kategoria;
+				cout << "Podaj kwote: ";
+				cin >> nowy_wydatek.kwota;
+				cout << "Podaj date (YYYY-MM-DD): ";
+				cin >> nowy_wydatek.data;
+				// Dodaj nowy_wydatek do odpowiedniej kolekcji/klasy z main2.cpp
+			} 
+			else if(typ_operacji == "przychod")
+			{
+				Wpis nowy_przychod;
+				cout << "Podaj kategorie przychodu: ";
+				cin >> nowy_przychod.kategoria;
+				cout << "Podaj kwote: ";
+				cin >> nowy_przychod.kwota;
+				cout << "Podaj date (YYYY-MM-DD): ";
+				cin >> nowy_przychod.data;
+				// Dodaj nowy_przychod do odpowiedniej kolekcji/klasy z main2.cpp
+			} else {
+				cout << "Niepoprawny typ operacji." << endl;
+			}
 			break;
 		case 2:
 			break;
