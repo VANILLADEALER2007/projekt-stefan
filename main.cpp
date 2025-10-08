@@ -22,12 +22,12 @@ class Wpis{
 		this -> notatka = notatka;
 	}
 	void wyswietl(){
-		cout << "id: ";//id
-		cout << " czas: ";//czas
-		cout << " typ: " << typ;
-		cout << " wartosc: " << wartosc;
-		cout << " kategoria: " << kategoria;
-		cout << " notatka: " << notatka;
+		cout << "ID: ";//id
+		cout << "   Czas: ";//czas
+		cout << "   Typ: " << typ;
+		cout << "   Wartosc: " << wartosc;
+		cout << "   Kategoria: " << kategoria;
+		cout << "   Notatka: " << notatka << endl;
 	}
 };
 
@@ -42,7 +42,7 @@ int main() {
 	//inne zmienne
 	int nr_operacji;
 
-	while (true){
+	while (dzialanie_programu){
 		cout << "Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:" << endl;
 	    cout << "1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie" << endl;
 	    cin >> nr_operacji;
@@ -50,7 +50,7 @@ int main() {
 		case 1:
 		{
 			//typ operacji
-			while(dzialanie_programu){
+			while(true){
 				cout << "Podaj typ operacji (przychod/wydatek/anuluj): ";
 			    cin >> typ_operacji;
 				if (typ_operacji == "przychod" || typ_operacji == "wydatek" ) break;
@@ -58,34 +58,32 @@ int main() {
 				else cout << "Niepoprawny typ operacji" << endl;
 			}
 
+			//jesli nie anulowano
 		    if(typ_operacji != "anuluj"){
-				
-		//kwota operacji
+		    //kwota operacji
 			cout << "Podaj wartosc (kwote) operacji: ";
 			cin >> wartosc_operacji;
-
-		//kategoria operacji
+		    //kategoria operacji
 			cout << "Podaj kategorie operacji: ";
 			//kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
 			cin >> kategoria_operacji;
-
-		//notatka do operacji
+		    //notatka do operacji
 		    cout << "Podaj notatke do operacji: ";
 			cin >> notatka_operacji;
-
 			//dodawanie wpisu do klasy
 			Wpis wpis(typ_operacji, wartosc_operacji, kategoria_operacji, notatka_operacji);
-
 			//dodawanie wpisu (tu: obiektu klasy) do listy wpisow
 			lista_wpisow.push_front(wpis);
 			break;
 			}
+
 		}
 		case 2:
 		{
 			for (Wpis wpis : lista_wpisow){
 				wpis.wyswietl();
 			}
+			break;
 		}
 //	    case 3:
 //	    	break;
@@ -99,6 +97,7 @@ int main() {
 //	    	break;
 	    case 8:
 		{
+			cout << "Zamykam program, dziekujemy za skorzystanie z naszej uslugi! :)" << endl;
 			dzialanie_programu = false;
 	    	break;
 		}
