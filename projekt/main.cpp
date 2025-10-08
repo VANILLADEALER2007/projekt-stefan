@@ -1,9 +1,20 @@
 #include <iostream>
-#include "main.h"
-#include "main2.cpp"
 
 using namespace std;
 
+class Wpis{
+	public:
+	int id;
+	time_t data;
+	double kwota;
+	string kategoria;
+	string notatka;
+	enum Typ
+	{
+		Wydatek,
+		Przychod
+	};
+};
 
 int main() {
 	int nr_operacji;
