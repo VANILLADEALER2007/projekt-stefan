@@ -18,8 +18,8 @@ int main() {
 			cin >> typ_operacji;
 			cout << "Podaj kategorie operacji: ";
 			break;
-//		case 2:
-//			break;
+		case 2:
+			break;
 //	    case 3:
 //	    	break;
 //	    case 4:
