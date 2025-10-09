@@ -2,27 +2,96 @@
 #include <ctime>
 #include <string>
 #include <list>
+#include <fstream>
+#include <filesystem>
+#include <sys/stat.h>
 
 using namespace std;
 
 class Wpis{
 	private:
-	int id;
+	static const string ConfigPath;
+	
+	static bool WczytanoConfig;
+	static unsigned int last_id;
+	unsigned int id;
 	time_t data;
 	double wartosc;
 	string typ, kategoria, notatka;
+	//sprawdza dostepnosc pliku konfiguracji zawierającego miedzy innymi wartosc ID ostatniego utworzonego elementu
+	bool DostepnoscConfigu () 
+	{
+		struct stat buffer;
+  		return (stat (ConfigPath.c_str(), &buffer) == 0); 
+	}
+	void UtworzConfig()
+	{
+		ofstream Config(ConfigPath);
+ 
+  	// Write to the file
+ 		Config << "0";
+ 
+ 	 // Close the file
+  		Config.close();
+	}
+	void WczytajConfig()
+	{
+		string configLastID;
+
+	// Read from the text file
+		ifstream MyReadFile(ConfigPath);
+
+	// Use a while loop together with the getline() function to read the file line by line
+		while (getline (MyReadFile, configLastID)) {
+  		// Output the text from the file
+		cout << configLastID;
+		last_id = std::stoul(configLastID);
+		}
+
+		// Close the file
+		MyReadFile.close();
+	}
+	void ZapiszConfig()
+	{
+		ofstream Config(ConfigPath);
+ 
+  	// Write to the file
+ 		Config << to_string(last_id);
+ 
+ 	 // Close the file
+  		Config.close();
+	}
 	public:
 	//konstruktor
 	Wpis(string typ, double wartosc, string kategoria, string notatka){
-		//do zrobienia - przypisanie id
+		
+		if(!WczytanoConfig)
+		{
+			if(!DostepnoscConfigu())
+			{
+				cout << "Brak pliku konfiguracyjnego, tworze nowy..." << endl;
+				UtworzConfig();
+			} else{
+				cout << "Wczytywanie pliku konfiguracyjnego..." << endl;
+				WczytajConfig();
+			}
+			WczytanoConfig = true;
+		} else{
+
+		}
+		//poprawic dzialanie wczytywania i przypisywania ID
+		this -> id = last_id + 1;
+		last_id++;
+		ZapiszConfig();
 		//do zrobienia - ustawienie czasu utworzenia wpisu na aktualny
+
 		this -> typ = typ;
 		this -> wartosc = wartosc;
 		this -> kategoria = kategoria;
 		this -> notatka = notatka;
 	}
 	void wyswietl(){
-		cout << "ID: ";//id
+		cout << "ID: " << id;//id
 		cout << "   Czas: ";//czas
 		cout << "   Typ: " << typ;
 		cout << "   Wartosc: " << wartosc;
@@ -30,7 +99,10 @@ class Wpis{
 		cout << "   Notatka: " << notatka << endl;
 	}
 };
-
+unsigned int Wpis::last_id = 0;
+bool Wpis::WczytanoConfig = false;
+// Define the static member outside the class
+const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config";
 list<Wpis> lista_wpisow;
 
 int main() {
