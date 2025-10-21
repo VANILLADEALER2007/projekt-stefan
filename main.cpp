@@ -2,35 +2,135 @@
 #include <ctime>
 #include <string>
 #include <list>
+#include <fstream>
+#include <filesystem>
+#include <sys/stat.h>
+#include <sstream>
 
 using namespace std;
 
+string formatujDate(time_t data) {
+    char buffer[20];
+    tm* czas = localtime(&data);
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", czas);
+    return string(buffer);
+}
+
 class Wpis{
 	private:
-	int id;
+	static const string ConfigPath;
+	
+	static bool WczytanoConfig;
+	unsigned int id;
 	time_t data;
 	double wartosc;
 	string typ, kategoria, notatka;
+	//sprawdza dostepnosc pliku konfiguracji zawierającego miedzy innymi wartosc ID ostatniego utworzonego elementu
+	bool DostepnoscConfigu () 
+	{
+		struct stat buffer;
+  		return (stat (ConfigPath.c_str(), &buffer) == 0); 
+	}
+	void UtworzConfig()
+	{
+		ofstream Config(ConfigPath);
+ 
+  	// Write to the file
+ 		Config << "0";
+ 
+ 	 // Close the file
+  		Config.close();
+	}
+	void WczytajConfig()
+	{
+		string configLastID;
+
+	// Read from the text file
+		ifstream MyReadFile(ConfigPath);
+
+	// Use a while loop together with the getline() function to read the file line by line
+		while (getline (MyReadFile, configLastID)) {
+  		// Output the text from the file
+		// cout << configLastID;
+		last_id = std::stoul(configLastID);
+		}
+
+		// Close the file
+		MyReadFile.close();
+	}
+	void ZapiszConfig()
+	{
+		ofstream Config(ConfigPath);
+ 
+  	// Write to the file
+ 		Config << to_string(last_id);
+ 
+ 	 // Close the file
+  		Config.close();
+	}
 	public:
 	//konstruktor
 	Wpis(string typ, double wartosc, string kategoria, string notatka){
-		//do zrobienia - przypisanie id
-		//do zrobienia - ustawienie czasu utworzenia wpisu na aktualny
+		
+		if(!WczytanoConfig)
+		{
+			if(!DostepnoscConfigu())
+			{
+				cout << "Brak pliku konfiguracyjnego, tworze nowy..." << endl;
+				UtworzConfig();
+			} else{
+				cout << "Wczytywanie pliku konfiguracyjnego..." << endl;
+				WczytajConfig();
+			}
+			WczytanoConfig = true;
+		} else{
+
+		}
+		//poprawic dzialanie wczytywania i przypisywania ID
+		this -> id = last_id + 1;
+		last_id++;
+		ZapiszConfig();
+		this->data = time(nullptr);
 		this -> typ = typ;
 		this -> wartosc = wartosc;
 		this -> kategoria = kategoria;
 		this -> notatka = notatka;
 	}
+
+	// Konstruktor do odczytu z pliku (z danymi: id, data, typ, wartosc, kategoria, notatka)
+    Wpis(unsigned int id, time_t data, string typ, double wartosc, string kategoria, string notatka) {
+	    this->id = id;
+	    this->data = data;
+	    this->typ = typ;
+	    this->wartosc = wartosc;
+	    this->kategoria = kategoria;
+	    this->notatka = notatka;
+    }
+
+	static unsigned int last_id;
+
 	void wyswietl(){
-		cout << "ID: ";//id
-		cout << "   Czas: ";//czas
+		cout << "ID: " << id;
+        cout << "   Czas: " << formatujDate(data);
 		cout << "   Typ: " << typ;
 		cout << "   Wartosc: " << wartosc;
 		cout << "   Kategoria: " << kategoria;
 		cout << "   Notatka: " << notatka << endl;
 	}
-};
 
+	void zapiszDoCSV(ofstream &plik) {
+    plik << id << "," 
+         << formatujDate(data) << "," 
+         << typ << "," 
+         << wartosc << "," 
+         << kategoria << "," 
+         << notatka << endl;
+    }
+};
+unsigned int Wpis::last_id = 0;
+bool Wpis::WczytanoConfig = false;
+// Define the static member outside the class
+const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
 list<Wpis> lista_wpisow;
 /*
 Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:
@@ -78,10 +178,11 @@ int main() {
 		    //kategoria operacji
 			cout << "Podaj kategorie operacji: ";
 			//kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
-			cin >> kategoria_operacji;
+			cin.ignore(); // czyści bufor wejściowy z pozostałości po poprzednim cin
+            getline(cin, kategoria_operacji);
 		    //notatka do operacji
 		    cout << "Podaj notatke do operacji: ";
-			cin >> notatka_operacji;
+            getline(cin, notatka_operacji);
 			//dodawanie wpisu do klasy
 			Wpis wpis(typ_operacji, wartosc_operacji, kategoria_operacji, notatka_operacji);
 			//dodawanie wpisu (tu: obiektu klasy) do listy wpisow
@@ -103,10 +204,61 @@ int main() {
 //	    	break;
 //	    case 5:
 //	    	break;
-//	    case 6:
-//	    	break;
-//	    case 7:
-//	    	break;
+        case 6:
+        {
+            ofstream plik("Data.txt");
+
+            if (!plik.is_open()) {
+                cout << "Nie mozna otworzyc pliku do zapisu!" << endl;
+                break;
+            }
+
+            for (Wpis &wpis : lista_wpisow) {
+                wpis.zapiszDoCSV(plik);
+            }
+
+            plik.close();
+            cout << "Zapisano dane do pliku Data.txt" << endl;
+            break;
+        }
+		case 7:
+        {
+            ifstream plik("Data.txt");
+
+            if (!plik.is_open()) {
+                cout << "Nie mozna otworzyc pliku do odczytu!" << endl;
+                break;
+            }
+
+            string linia;
+            while (getline(plik, linia)) {
+                // Zakładamy format CSV: id,data,typ,wartosc,kategoria,notatka
+                stringstream ss(linia);
+                string id_str, data_str, typ, wartosc_str, kategoria, notatka;
+
+                getline(ss, id_str, ',');
+                getline(ss, data_str, ',');
+                getline(ss, typ, ',');
+                getline(ss, wartosc_str, ',');
+                getline(ss, kategoria, ',');
+                getline(ss, notatka);
+
+                unsigned int id = stoi(id_str);
+                time_t data = static_cast<time_t>(stol(data_str));
+                double wartosc = stod(wartosc_str);
+
+                Wpis wpis(id, data, typ, wartosc, kategoria, notatka);
+                lista_wpisow.push_back(wpis); // można użyć push_back, żeby zachować kolejność z pliku
+
+                // Uaktualnij last_id, jeśli potrzebne
+                if (id > Wpis::last_id)
+                    Wpis::last_id = id;
+            }
+
+    plik.close();
+    cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
+    break;
+}
 	    case 8:
 		{
 			cout << "Zamykam program, dziekujemy za skorzystanie z naszej uslugi! :)" << endl;
