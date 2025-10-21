@@ -155,6 +155,25 @@ double GetDouble()
 	return x;
 }
 
+string GetCategory()
+{
+	bool good = false;
+	string kategoria_operacji;
+	while (!good)
+	{
+		getline(cin, kategoria_operacji);
+		size_t found = kategoria_operacji.find(",");
+
+		if (found != string::npos)
+		{
+			cout << "Nie mozesz uzyc znaku ',' w kategorii, podaj kategorie nie uzywajac przecinka: ";
+		} else{
+			good = true;
+		}
+	}
+	return kategoria_operacji;
+}
+
 time_t getTimeFromString(string timeString)
 {
 	tm tm = {};
@@ -188,6 +207,8 @@ int main()
 
 	// inne zmienne
 	int nr_operacji;
+
+	cout << fixed << std::setprecision(2);
 
 	while (dzialanie_programu)
 	{
@@ -224,7 +245,9 @@ int main()
 				cout << "Podaj kategorie operacji: ";
 				// kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
 				cin.ignore(); // czyści bufor wejściowy z pozostałości po poprzednim cin
-				getline(cin, kategoria_operacji);
+
+				kategoria_operacji = GetCategory();
+
 				// notatka do operacji
 				cout << "Podaj notatke do operacji: ";
 				getline(cin, notatka_operacji);
