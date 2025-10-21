@@ -1,2 +1,2 @@
 2,2025-10-18 22:10:01,wydatek,50,spozywcze,otwieram wino ze swoja dziewczyna
-1,2025-10-18 22:09:44,przychod,500,socjal,500+
+1,2025-10-18 22:09:44,przychod,800,socjal,800+

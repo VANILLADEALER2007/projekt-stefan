@@ -132,17 +132,7 @@ bool Wpis::WczytanoConfig = false;
 // Define the static member outside the class
 const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
 list<Wpis> lista_wpisow;
-/*
-Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:
-1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie
-1
-Podaj typ operacji (przychod/wydatek/anuluj): przychod
-Podaj wartosc (kwote) operacji: 20,15 <--- problem z wartosciami z przecinkiem i z rozpoznawaniem czy poprawnie wpisana wartosc
-Podaj kategorie operacji: Podaj notatke do operacji: asdasd
-Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:
-1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie
-2
-ID:    Czas:    Typ: przychod   Wartosc: 20   Kategoria: ,15   Notatka: asdasd */
+
 int main() {
 	//inicjalizacja zmiennnych ktore beda przekazywane do klasy z programu glownego
 	string typ_operacji, kategoria_operacji, notatka_operacji;
