@@ -90,7 +90,8 @@ class Wpis{
 		this -> id = last_id + 1;
 		last_id++;
 		ZapiszConfig();
-		this->data = time(nullptr);
+		data = time(0);
+		localtime(&data);
 		this -> typ = typ;
 		this -> wartosc = wartosc;
 		this -> kategoria = kategoria;
@@ -127,22 +128,41 @@ class Wpis{
          << notatka << endl;
     }
 };
+
+double GetDouble () {
+    double x;
+    cin >> x;
+    while( cin.fail() || (cin.peek() != '\r' && cin.peek() != '\n'))
+    {
+        cout << "Nieprawidłowa liczba! Wprowadź liczbę z przecinkiem używając '.' zamiast przecinka: " ;
+        cin.clear();
+        while( cin.get() != '\n' );
+        cin >> x;
+    }
+    return x;
+}
+
+time_t getTimeFromString(string timeString)
+{
+	tm tm = {};
+	tm.tm_isdst = -1;
+    istringstream iss(timeString);
+	iss >> get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    time_t data;
+	if (iss.fail()) {
+        cout << "Blad w trakcie proby odczytania daty!" << endl;
+    } else{
+		data = mktime(&tm);
+	}
+	return data;
+}
+
 unsigned int Wpis::last_id = 0;
 bool Wpis::WczytanoConfig = false;
 // Define the static member outside the class
 const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
 list<Wpis> lista_wpisow;
-/*
-Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:
-1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie
-1
-Podaj typ operacji (przychod/wydatek/anuluj): przychod
-Podaj wartosc (kwote) operacji: 20,15 <--- problem z wartosciami z przecinkiem i z rozpoznawaniem czy poprawnie wpisana wartosc
-Podaj kategorie operacji: Podaj notatke do operacji: asdasd
-Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:
-1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie
-2
-ID:    Czas:    Typ: przychod   Wartosc: 20   Kategoria: ,15   Notatka: asdasd */
+
 int main() {
 	//inicjalizacja zmiennnych ktore beda przekazywane do klasy z programu glownego
 	string typ_operacji, kategoria_operacji, notatka_operacji;
@@ -174,7 +194,8 @@ int main() {
 		    if(typ_operacji != "anuluj"){
 		    //kwota operacji
 			cout << "Podaj wartosc (kwote) operacji: ";
-			cin >> wartosc_operacji;
+
+			wartosc_operacji = GetDouble();
 		    //kategoria operacji
 			cout << "Podaj kategorie operacji: ";
 			//kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
@@ -193,8 +214,14 @@ int main() {
 		}
 		case 2:
 		{
-			for (Wpis wpis : lista_wpisow){
-				wpis.wyswietl();
+			if(!lista_wpisow.empty())
+			{
+				for (Wpis wpis : lista_wpisow){
+					wpis.wyswietl();
+				}
+			}
+			else{
+				cout << "Lista jest pusta! Wczytaj wczesniej utworzona liste za pomoca opcji '7. Odczyt' lub zacznij dodawac wpisy za pomoca '1. Dodaj'." << endl;
 			}
 			break;
 		}
@@ -204,9 +231,9 @@ int main() {
 //	    	break;
 //	    case 5:
 //	    	break;
-        case 6:
+        case 6: //zapis
         {
-            ofstream plik("Data.txt");
+            ofstream plik("Data.txt", ofstream::trunc);
 
             if (!plik.is_open()) {
                 cout << "Nie mozna otworzyc pliku do zapisu!" << endl;
@@ -221,7 +248,7 @@ int main() {
             cout << "Zapisano dane do pliku Data.txt" << endl;
             break;
         }
-		case 7:
+		case 7: //odczyt
         {
             ifstream plik("Data.txt");
 
@@ -229,7 +256,7 @@ int main() {
                 cout << "Nie mozna otworzyc pliku do odczytu!" << endl;
                 break;
             }
-
+			lista_wpisow.clear();
             string linia;
             while (getline(plik, linia)) {
                 // Zakładamy format CSV: id,data,typ,wartosc,kategoria,notatka
@@ -242,9 +269,11 @@ int main() {
                 getline(ss, wartosc_str, ',');
                 getline(ss, kategoria, ',');
                 getline(ss, notatka);
-
+				
                 unsigned int id = stoi(id_str);
-                time_t data = static_cast<time_t>(stol(data_str));
+
+				time_t data = getTimeFromString(data_str);
+				
                 double wartosc = stod(wartosc_str);
 
                 Wpis wpis(id, data, typ, wartosc, kategoria, notatka);
@@ -255,10 +284,10 @@ int main() {
                     Wpis::last_id = id;
             }
 
-    plik.close();
-    cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
-    break;
-}
+    	plik.close();
+    	cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
+    	break;
+		}
 	    case 8:
 		{
 			cout << "Zamykam program, dziekujemy za skorzystanie z naszej uslugi! :)" << endl;
