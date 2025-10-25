@@ -13,7 +13,7 @@ string formatujDate(time_t data)
 {
 	char buffer[20];
 	tm *czas = localtime(&data);
-	strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", czas);
+	strftime(buffer, sizeof(buffer), "%Y-%m-%d", czas);
 	return string(buffer);
 }
 
@@ -22,6 +22,7 @@ class Wpis
 private:
 	static const string ConfigPath;
 
+public:
 	static bool WczytanoConfig;
 	unsigned int id;
 	time_t data;
@@ -74,7 +75,7 @@ private:
 
 public:
 	// konstruktor
-	Wpis(string typ, double wartosc, string kategoria, string notatka)
+	Wpis(string typ, double wartosc, string kategoria, string notatka, bool inkrementujID = true)
 	{
 
 		if (!WczytanoConfig)
@@ -96,7 +97,10 @@ public:
 		}
 		// poprawic dzialanie wczytywania i przypisywania ID
 		this->id = last_id + 1;
-		last_id++;
+		if(inkrementujID)
+		{
+			last_id++;
+		}
 		ZapiszConfig();
 		data = time(0);
 		localtime(&data);
@@ -167,7 +171,9 @@ string GetCategory()
 		if (found != string::npos)
 		{
 			cout << "Nie mozesz uzyc znaku ',' w kategorii, podaj kategorie nie uzywajac przecinka: ";
-		} else{
+		}
+		else
+		{
 			good = true;
 		}
 	}
@@ -179,7 +185,7 @@ time_t getTimeFromString(string timeString)
 	tm tm = {};
 	tm.tm_isdst = -1;
 	istringstream iss(timeString);
-	iss >> get_time(&tm, "%Y-%m-%d %H:%M:%S");
+	iss >> get_time(&tm, "%Y-%m-%d");
 	time_t data;
 	if (iss.fail())
 	{
@@ -197,6 +203,28 @@ bool Wpis::WczytanoConfig = false;
 // Define the static member outside the class
 const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
 list<Wpis> lista_wpisow;
+
+void SortujListePoKwocie()
+{
+	list<Wpis> posortowanaLista;
+	Wpis najwiekszaKwota = Wpis("", INT32_MAX, "", "", false);
+	double najmniejszaRoznica = 0;
+	for (int i = 0; i < lista_wpisow.size(); i++)
+	{
+		Wpis lastKwota = Wpis("", 0.0, "", "", false);
+		for (Wpis w : lista_wpisow)
+		{
+			if(w.wartosc >= lastKwota.wartosc && w.wartosc <= najwiekszaKwota.wartosc && w.id != lastKwota.id && najwiekszaKwota.id != w.id)
+			{
+				lastKwota = w;
+			}
+		}
+		najwiekszaKwota = lastKwota;
+		posortowanaLista.push_front(lastKwota);
+	}
+
+	lista_wpisow = posortowanaLista;
+}
 
 int main()
 {
@@ -275,8 +303,10 @@ int main()
 		}
 			//	    case 3:
 			//	    	break;
-			//	    case 4:
-			//	    	break;
+		case 4: // sortowanie (jak narazie tylko po kwocie, trzeba dodac pozostale sposoby sortowania, tj. data + id, kwota->ale malejąco, moze kategorami alfabetycznie ;P)
+			SortujListePoKwocie();
+			cout << "lista zostala posortowana po kwocie!" << endl;
+			break;
 			//	    case 5:
 			//	    	break;
 		case 6: // zapis
