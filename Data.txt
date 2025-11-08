@@ -1,3 +1,1 @@
-7,2025-10-21 15:33:35,przychod,15623.9,Wynagrodzenie,Wynagrodzenie za miesiac Wrzesien
-6,2025-10-21 14:00:44,przychod,2323,sad,as
-5,2025-10-21 15:00:13,wydatek,2323,sdsd,sds
+8,2025-11-08,wydatek,65,potrzeby czlowieka,wagon ruskich szlugow
