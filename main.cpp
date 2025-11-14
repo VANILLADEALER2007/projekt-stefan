@@ -9,6 +9,7 @@
 
 using namespace std;
 
+//funkcja konwertująca typ danych time_t na czytelny ciąg znaków string
 string formatujDate(time_t data)
 {
 	char buffer[20];
@@ -17,6 +18,7 @@ string formatujDate(time_t data)
 	return string(buffer);
 }
 
+//klasa wpis
 class Wpis
 {
 private:
@@ -38,38 +40,35 @@ public:
 	{
 		ofstream Config(ConfigPath);
 
-		// Write to the file
+		//zapisywanie do pliku
 		Config << "0";
 
-		// Close the file
+		//zamykanie pliku
 		Config.close();
 	}
 	void WczytajConfig()
 	{
 		string configLastID;
 
-		// Read from the text file
+		//odczyt z pliku
 		ifstream MyReadFile(ConfigPath);
 
-		// Use a while loop together with the getline() function to read the file line by line
 		while (getline(MyReadFile, configLastID))
 		{
-			// Output the text from the file
-			// cout << configLastID;
 			last_id = std::stoul(configLastID);
 		}
 
-		// Close the file
+		//zamykanie pliku
 		MyReadFile.close();
 	}
 	void ZapiszConfig()
 	{
 		ofstream Config(ConfigPath);
 
-		// Write to the file
+		//zapis do pliku
 		Config << to_string(last_id);
 
-		// Close the file
+		//zamykanie pliku
 		Config.close();
 	}
 
@@ -144,6 +143,7 @@ public:
 	}
 };
 
+//pobieranie typu double - jesli podamy np. string, program sie nie wywali
 double GetDouble()
 {
 	double x;
@@ -159,6 +159,7 @@ double GetDouble()
 	return x;
 }
 
+//poprawne pobieranie kategorii
 string GetCategory()
 {
 	bool good = false;
@@ -180,6 +181,7 @@ string GetCategory()
 	return kategoria_operacji;
 }
 
+//konersja z string do time_t
 time_t getTimeFromString(string timeString)
 {
 	tm tm = {};
@@ -200,10 +202,11 @@ time_t getTimeFromString(string timeString)
 
 unsigned int Wpis::last_id = 0;
 bool Wpis::WczytanoConfig = false;
-// Define the static member outside the class
+//pole statyczne - ścieżka do pliku z configiem
 const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
 list<Wpis> lista_wpisow;
 
+//sortowanie listy po kwocie
 void SortujListePoKwocie()
 {
 	list<Wpis> posortowanaLista;
