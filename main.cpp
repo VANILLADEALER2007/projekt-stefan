@@ -18,90 +18,102 @@ string formatujDate(time_t data)
 	return string(buffer);
 }
 
-//klasa wpis
-class Wpis
+//konersja z string do time_t
+time_t getTimeFromString(string timeString)
 {
-private:
-	static const string ConfigPath;
-
-public:
-	static bool WczytanoConfig;
-	unsigned int id;
+	tm tm = {};
+	tm.tm_isdst = -1;
+	istringstream iss(timeString);
+	iss >> get_time(&tm, "%Y-%m-%d");
 	time_t data;
-	double wartosc;
-	string typ, kategoria, notatka;
-	// sprawdza dostepnosc pliku konfiguracji zawierającego miedzy innymi wartosc ID ostatniego utworzonego elementu
-	bool DostepnoscConfigu()
+	if (iss.fail())
+	{
+		cout << "Blad w trakcie proby odczytania daty!" << endl;
+	}
+	else
+	{
+		data = mktime(&tm);
+	}
+	return data;
+}
+
+//klasy
+//klasa config
+class Config
+{
+	private:
+	static const string ConfigPath;
+	static bool WczytanoConfig;
+	//sprawdzamy czy plik config jest utworzony
+	
+	public:
+	bool Dostepnosc()
 	{
 		struct stat buffer;
 		return (stat(ConfigPath.c_str(), &buffer) == 0);
 	}
-	void UtworzConfig()
+	//tworzenie configu - za pierwszym razem
+	void Utworz()
 	{
 		ofstream Config(ConfigPath);
-
-		//zapisywanie do pliku
 		Config << "0";
-
-		//zamykanie pliku
 		Config.close();
 	}
-	void WczytajConfig()
+	//wczytywanie configu
+	void Wczytaj()
 	{
-		string configLastID;
-
-		//odczyt z pliku
-		ifstream MyReadFile(ConfigPath);
-
-		while (getline(MyReadFile, configLastID))
-		{
-			last_id = std::stoul(configLastID);
-		}
-
-		//zamykanie pliku
-		MyReadFile.close();
+		ifstream Config(ConfigPath);
+		Config >> last_id;
+        Config.close();
 	}
-	void ZapiszConfig()
+	//zapis do pliku 
+	void Zapisz()
 	{
 		ofstream Config(ConfigPath);
-
-		//zapis do pliku
-		Config << to_string(last_id);
-
-		//zamykanie pliku
+		Config << last_id;
 		Config.close();
 	}
-
-public:
-	// konstruktor
-	Wpis(string typ, double wartosc, string kategoria, string notatka, bool inkrementujID = true)
+	static unsigned int last_id;
+	//konstruktor
+	Config()
 	{
-
 		if (!WczytanoConfig)
 		{
-			if (!DostepnoscConfigu())
+			if (!Dostepnosc())
 			{
 				cout << "Brak pliku konfiguracyjnego, tworze nowy..." << endl;
-				UtworzConfig();
+				Utworz();
 			}
 			else
 			{
 				cout << "Wczytywanie pliku konfiguracyjnego..." << endl;
-				WczytajConfig();
+				Wczytaj();
 			}
 			WczytanoConfig = true;
 		}
-		else
-		{
-		}
-		// poprawic dzialanie wczytywania i przypisywania ID
-		this->id = last_id + 1;
-		if(inkrementujID)
-		{
-			last_id++;
-		}
-		ZapiszConfig();
-		data = time(0);
+	}
+};
+
+//statyczne pola do config
+unsigned int Config::last_id = 0;
+bool Config::WczytanoConfig = false;
+const string Config::ConfigPath = filesystem::current_path().string() + "/Config.txt";
+
+//klasa wpis
+class Wpis
+{
+public:
+    //te wartości będzie posiadać wpis
+	unsigned int id;
+	time_t data;
+	double wartosc;
+	string typ, kategoria, notatka;
+	
+	//konstruktor
+	Wpis(string typ, double wartosc, string kategoria, string notatka)
+	{
+		this->id = ++Config::last_id;
+		this->data = time(0);
 		localtime(&data);
 		this->typ = typ;
 		this->wartosc = wartosc;
@@ -109,7 +121,7 @@ public:
 		this->notatka = notatka;
 	}
 
-	// Konstruktor do odczytu z pliku (z danymi: id, data, typ, wartosc, kategoria, notatka)
+	//konstruktor do odczytu z pliku (z danymi: id, data, typ, wartosc, kategoria, notatka)
 	Wpis(unsigned int id, time_t data, string typ, double wartosc, string kategoria, string notatka)
 	{
 		this->id = id;
@@ -119,8 +131,6 @@ public:
 		this->kategoria = kategoria;
 		this->notatka = notatka;
 	}
-
-	static unsigned int last_id;
 
 	void wyswietl()
 	{
@@ -142,6 +152,9 @@ public:
 			 << notatka << endl;
 	}
 };
+
+//pola statyczne dla klasy wpis
+list<Wpis> lista_wpisow;
 
 //pobieranie typu double - jesli podamy np. string, program sie nie wywali
 double GetDouble()
@@ -181,40 +194,15 @@ string GetCategory()
 	return kategoria_operacji;
 }
 
-//konersja z string do time_t
-time_t getTimeFromString(string timeString)
-{
-	tm tm = {};
-	tm.tm_isdst = -1;
-	istringstream iss(timeString);
-	iss >> get_time(&tm, "%Y-%m-%d");
-	time_t data;
-	if (iss.fail())
-	{
-		cout << "Blad w trakcie proby odczytania daty!" << endl;
-	}
-	else
-	{
-		data = mktime(&tm);
-	}
-	return data;
-}
-
-unsigned int Wpis::last_id = 0;
-bool Wpis::WczytanoConfig = false;
-//pole statyczne - ścieżka do pliku z configiem
-const string Wpis::ConfigPath = filesystem::current_path().string() + "/Config.txt";
-list<Wpis> lista_wpisow;
-
 //sortowanie listy po kwocie
 void SortujListePoKwocie()
 {
 	list<Wpis> posortowanaLista;
-	Wpis najwiekszaKwota = Wpis("", INT32_MAX, "", "", false);
+	Wpis najwiekszaKwota = Wpis("", INT32_MAX, "", "");
 	double najmniejszaRoznica = 0;
 	for (int i = 0; i < lista_wpisow.size(); i++)
 	{
-		Wpis lastKwota = Wpis("", 0.0, "", "", false);
+		Wpis lastKwota = Wpis("", 0.0, "", "");
 		for (Wpis w : lista_wpisow)
 		{
 			if(w.wartosc >= lastKwota.wartosc && w.wartosc <= najwiekszaKwota.wartosc && w.id != lastKwota.id && najwiekszaKwota.id != w.id)
@@ -238,6 +226,8 @@ int main()
 
 	// inne zmienne
 	int nr_operacji;
+
+	Config config;
 
 	cout << fixed << std::setprecision(2);
 
@@ -329,6 +319,7 @@ int main()
 
 			plik.close();
 			cout << "Zapisano dane do pliku Data.txt" << endl;
+			config.Zapisz();
 			break;
 		}
 		case 7: // odczyt
@@ -365,8 +356,8 @@ int main()
 				lista_wpisow.push_back(wpis); // można użyć push_back, żeby zachować kolejność z pliku
 
 				// Uaktualnij last_id, jeśli potrzebne
-				if (id > Wpis::last_id)
-					Wpis::last_id = id;
+				if (id > Config::last_id)
+					Config::last_id = id;
 			}
 
 			plik.close();

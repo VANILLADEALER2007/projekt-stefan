@@ -1,1 +1,3 @@
-8,2025-11-08,wydatek,65,potrzeby czlowieka,wagon ruskich szlugow
+3,2025-11-15,wydatek,400,potrzeby czlowieka,wagon ruskich szlugow
+2,2025-11-15,wydatek,200,spozywcze,dwiescie bulek
+1,2025-11-15,wydatek,1500,na dzieci,alimenty
