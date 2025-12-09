@@ -1,14 +1,18 @@
 #include <iostream>
 #include <ctime>
 #include <string>
-#include <list>
+#include <vector>
 #include <fstream>
 #include <filesystem>
 #include <sys/stat.h>
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
 
+// klasa DataTime tworzy obiekty, które przechowują tą samą datę w dwóch formatach
+// strTime - czytelna dla człowieka
+// tTime - reprezentacja czasu maszynowego
 class DataTime
 {
 private:
@@ -16,14 +20,18 @@ private:
 	time_t tTime;
 
 public:
+    // konstruktor tworzący obiekt o aktualnej dacie
 	DataTime(bool CurrentTime)
 	{
 		if (CurrentTime)
 		{
-			tTime = time(0);
-			localtime(&tTime);
-			DataTime a = DataTime(tTime);
-			strTime = a.GetString();
+			tTime = time(nullptr);
+			tm* czas = localtime(&tTime);
+			
+			char buffer[20];
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d", czas);
+
+			strTime = buffer;
 		}
 		else
 		{
@@ -33,38 +41,53 @@ public:
 		}
 	}
 
+	// konstruktor tworzący obiekt o dacie podanej w zmiennej data
+	// ten konstruktor stosujemy przy odczycie z pliku CSV
 	DataTime(time_t data)
 	{
 		tTime = data;
 		char buffer[20];
-		tm *czas = localtime(&data);
+		tm* czas = localtime(&data);
 		strftime(buffer, sizeof(buffer), "%Y-%m-%d", czas);
 		strTime = string(buffer);
 	}
 
+	// konstruktor tworzący obiekt o dacie podanej w zmiennej data
+	// ten konstruktor stosujemy przy odczycie z pliku CSV
 	DataTime(string timeString)
 	{
 		strTime = timeString;
-		tm tm = {};
-		tm.tm_isdst = -1;
+		tm tim = {};
+		tim.tm_isdst = -1;
+
 		istringstream iss(timeString);
-		iss >> get_time(&tm, "%Y-%m-%d");
+		iss >> get_time(&tim, "%Y-%m-%d");
+
 		if (iss.fail())
 		{
 			cout << "Blad w trakcie proby odczytania daty!" << endl;
+
+			tTime = time(nullptr);
+			tm* czas = localtime(&tTime);
+			
+			char buffer[20];
+			strftime(buffer, sizeof(buffer), "%Y-%m-%d", czas);
+
+			strTime = buffer;
 		}
 		else
 		{
-			tTime = mktime(&tm);
+			tTime = mktime(&tim);
 		}
 	}
 
-	string GetString()
+	// gettery
+	string GetString() const
 	{
 		return strTime;
 	}
 
-	time_t GetTime_T()
+	time_t GetTime_T() const
 	{
 		return tTime;
 	}
@@ -101,6 +124,7 @@ public:
 		this->notatka = notatka;
 	}
 
+	// wyświetlenie wpisu
 	void wyswietl()
 	{
 		cout << "ID: " << id;
@@ -111,6 +135,7 @@ public:
 		cout << "   Notatka: " << notatka << endl;
 	}
 
+	// zapis wpisu do pliku CSV
 	void zapiszDoCSV(ofstream &plik)
 	{
 		plik << id << ","
@@ -122,49 +147,46 @@ public:
 	}
 };
 
-list<Wpis> lista_wpisow;
+// wektor ktory przechowuje wszystkie wpisy utworzone podczas aktualnej sesji
+vector<Wpis> lista_wpisow;
+// inicjalizacja zmiennej last_id (globalna) - zmieniamy jej wartość w funkcji Wczytaj() w klasie UserMenu
 int last_id;
 
 class UserMenu
 {
-	// pobieranie typu double - jesli podamy np. string, program sie nie wywali
+	// funkcja GetDouble() sprawdza czy podaliśmy wartość, którą możemy przypisać do zmiennej typy double.
+	// jeśli nie da się tego zrobić, funkcja nie dopuszcza do dalszego działania programu, co mogłoby spowodować błąd
 	static double GetDouble()
 	{
-		double x;
-		cin >> x;
-		while (cin.fail() || (cin.peek() != '\r' && cin.peek() != '\n'))
+		string x;
+		while(true)
 		{
-			cout << "Nieprawidłowa liczba! Wprowadź liczbę z przecinkiem używając '.' zamiast przecinka: ";
-			cin.clear();
-			while (cin.get() != '\n')
-				;
-			cin >> x;
+			getline(cin, x);
+			try{
+				return stod(x); // stod() - konwersja string na double
+			} catch (...) {
+				cout << "Nieprawidlowa liczba! Wprowadz ponownie: ";
+			}
 		}
-		return x;
 	}
 
 	// poprawne pobieranie kategorii
 	static string GetCategory()
-	{
-		bool good = false;
-		string kategoria_operacji;
-		while (!good)
-		{
-			getline(cin, kategoria_operacji);
-			size_t found = kategoria_operacji.find(",");
+    {
+        string kategoria;
+        while (true)
+        {
+            getline(cin, kategoria);
+            if (kategoria.find(',') != string::npos)
+                cout << "Nie mozesz uzyc znaku ',' w kategorii, wprowadz ponownie: ";
+            else if (kategoria.empty())
+                cout << "Kategoria nie moze byc pusta, wprowadz ponownie: ";
+            else
+                return kategoria;
+        }
+    }
 
-			if (found != string::npos)
-			{
-				cout << "Nie mozesz uzyc znaku ',' w kategorii, podaj kategorie nie uzywajac przecinka: ";
-			}
-			else
-			{
-				good = true;
-			}
-		}
-		return kategoria_operacji;
-	}
-
+	// zapis do pliku CSV [FUNKCJONALNOŚĆ NR 6]
 	static void Zapisz()
 	{
 		ofstream plik("Data.txt", ofstream::trunc);
@@ -176,7 +198,7 @@ class UserMenu
 		else
 		{
 
-			for (Wpis &wpis : lista_wpisow)
+			for (auto& wpis : lista_wpisow)
 			{
 				wpis.zapiszDoCSV(plik);
 			}
@@ -186,6 +208,7 @@ class UserMenu
 		}
 	}
 
+	// wczytywanie z pliku CSV [FUNKCJONALNOŚĆ NR 7]
 	static void Wczytaj()
 	{
 		ifstream plik("Data.txt");
@@ -222,22 +245,22 @@ class UserMenu
 			}
 			plik.close();
 
-			for (Wpis a : lista_wpisow)
+			for (auto& a : lista_wpisow)
 			{
 				if (last_id < a.id)
-				{
 					last_id = a.id;
-				}
 			}
+
 			cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
 		}
 	}
 
+	// wyświetlenie listy wpisów [FUNKCJONALNOŚĆ NR 2]
 	static void Wyswietl()
 	{
 		if (!lista_wpisow.empty())
 		{
-			for (Wpis wpis : lista_wpisow)
+			for (auto& wpis : lista_wpisow)
 			{
 				wpis.wyswietl();
 			}
@@ -248,23 +271,20 @@ class UserMenu
 		}
 	}
 
+	// dodawanie wpisu [FUNKCJONALNOŚĆ NR 1]
 	static void DodawanieWpisu()
 	{
 		string typ_operacji, kategoria_operacji, notatka_operacji;
 		double wartosc_operacji;
-		// typ operacji
-		bool wyborTypu = true;
+
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		// weryfikacja poprawnosci wpisanego typu operacji
-		while (wyborTypu)
+		while (true)
 		{
 			cout << "Podaj typ operacji (przychod/wydatek/anuluj): ";
-			cin >> typ_operacji;
-			if (typ_operacji == "przychod" || typ_operacji == "wydatek")
-				wyborTypu = false;
-			else if (typ_operacji == "anuluj")
-				wyborTypu = false;
-			else
-				cout << "Niepoprawny typ operacji" << endl;
+			getline(cin, typ_operacji);
+			if (typ_operacji == "przychod" || typ_operacji == "wydatek" || typ_operacji == "anuluj") break;
+			else cout << "Niepoprawny typ operacji" << endl;
 		}
 
 		// jesli nie anulowano
@@ -274,10 +294,16 @@ class UserMenu
 			cout << "Podaj wartosc (kwote) operacji: ";
 
 			wartosc_operacji = GetDouble();
+
+			//aby nie bylo ujemnych wartosci
+			if (wartosc_operacji < 0){
+				wartosc_operacji *= -1;
+				cout << "Wprowadzono wartosc mniejsza od 0. Zmienilismy ja na liczbe przeciwna" << endl;
+			}1
+
 			// kategoria operacji
 			cout << "Podaj kategorie operacji: ";
 			// kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
-			cin.ignore(); // czyści bufor wejściowy z pozostałości po poprzednim cin
 
 			kategoria_operacji = GetCategory();
 
@@ -288,8 +314,65 @@ class UserMenu
 			last_id++;
 			Wpis wpis(last_id, typ_operacji, wartosc_operacji, kategoria_operacji, notatka_operacji);
 			// dodawanie wpisu (tu: obiektu klasy) do listy wpisow
-			lista_wpisow.push_front(wpis);
+			lista_wpisow.push_back(wpis);
 		}
+	}
+
+	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
+	static void Sortuj()
+	{
+		string typ_sortowania, rodzaj_sortowania;
+
+		cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+		// weryfikacja poprawnosci wpisanego typu sortowania
+		while (true)
+		{
+			cout << "Podaj po czym chcesz sortowac swoje wpisy (data/kwota): ";
+			getline(cin, typ_sortowania);
+			if (typ_sortowania == "data" || typ_sortowania == "kwota") break;
+			else cout << "Niepoprawny typ sortowania" << endl;
+		}
+		// weryfikacja poprawnosci wpisanego rodzaju sortowania
+		while (true)
+		{
+			cout << "Podaj jak chcesz sortowac (rosnaco/malejaco): ";
+			getline(cin, rodzaj_sortowania);
+			if (rodzaj_sortowania == "rosnaco" || rodzaj_sortowania == "malejaco") break;
+			else cout << "Niepoprawny rodzaj sortowania" << endl;
+		}
+		//proces sortowania
+		//sortowanie po dacie
+		if (typ_sortowania == "data"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() < b.data.GetTime_T();
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() > b.data.GetTime_T();
+				});
+			}
+		}
+		if (typ_sortowania == "kwota"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc < b.wartosc;
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc > b.wartosc;
+				});
+
+			}
+		}
+
+		cout << "Lista wpisow posortowana!" << endl;
 	}
 
 	public:
@@ -304,16 +387,31 @@ class UserMenu
 		{
 			cout << "Witamy w menedzerze budzetu domowego, prosimy wybrac operacje wpisujac cyfre od 1 do 8:" << endl;
 			cout << "1. Dodaj   2. Lista   3. Filtruj   4. Sortuj   5. Statystyki   6. Zapis   7. Odczyt   8. Wyjscie" << endl;
+			cout << "UWAGA! - jesli jest to poczatek twojej sesji, zaleca sie zastosowanie w pierwszej kolejnosci opcji nr 7 - odczyt, aby nie utracic wczesniej zapisanych wpisow!" << endl;
 			cin >> nr_operacji;
 			switch (nr_operacji)
 			{
-			case 1:
+			case 1: //dodaj
 			{
 				DodawanieWpisu();
+				break;
 			}
-			case 2:
+			case 2: //lista
 			{
 				Wyswietl();
+				break;
+			}
+			case 3: //filtruj
+			{
+				break;
+			}
+			case 4: // sortuj
+			{
+				Sortuj();
+				break;
+			}
+			case 5: // statystyki
+			{
 				break;
 			}
 			case 6: // zapis
@@ -326,7 +424,7 @@ class UserMenu
 				Wczytaj();
 				break;
 			}
-			case 8:
+			case 8: // wyjscie
 			{
 				cout << "Zamykam program, dziekujemy za skorzystanie z naszej uslugi! :)" << endl;
 				dzialanie_programu = false;
