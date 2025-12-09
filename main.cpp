@@ -299,7 +299,7 @@ class UserMenu
 			if (wartosc_operacji < 0){
 				wartosc_operacji *= -1;
 				cout << "Wprowadzono wartosc mniejsza od 0. Zmienilismy ja na liczbe przeciwna" << endl;
-			}1
+			}
 
 			// kategoria operacji
 			cout << "Podaj kategorie operacji: ";
