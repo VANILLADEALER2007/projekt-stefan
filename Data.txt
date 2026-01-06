@@ -1,1 +1,15 @@
 1,2025-12-09,wydatek,300,odzież,brązowy płaszcz Próchnik
+2,2024-01-06,wydatek,120.50,zakupy,Spozywcze Lidl
+3,2024-01-08,wydatek,75.00,transport,Paliwo
+4,2024-01-10,wydatek,210.00,rachunki,Internet i telefon
+5,2024-01-12,przychod,500.00,freelance,Zlecenie graficzne
+6,2024-01-14,wydatek,60.00,rozrywka,Kino
+7,2024-01-15,wydatek,45.99,subskrypcje,Spotify
+8,2024-01-18,wydatek,320.00,zdrowie,Wizyta u dentysty
+9,2024-01-20,przychod,200.00,zwrot,Zwrot podatku
+10,2024-01-22,wydatek,150.00,odziez,Buty
+11,2024-01-24,wydatek,89.90,zakupy,Drogeria
+12,2024-01-26,przychod,300.00,bonus,Premia
+13,2024-01-27,wydatek,40.00,transport,Bilet miesieczny
+14,2024-01-28,wydatek,180.00,dom,Artykuly domowe
+15,2024-01-30,wydatek,95.00,rozrywka,Restauracja
