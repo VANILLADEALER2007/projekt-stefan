@@ -186,6 +186,69 @@ class UserMenu
         }
     }
 
+    // dodawanie wpisu [FUNKCJONALNOŚĆ NR 1]
+	static void DodawanieWpisu()
+	{
+		string typ_operacji, kategoria_operacji, notatka_operacji;
+		double wartosc_operacji;
+
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		// weryfikacja poprawnosci wpisanego typu operacji
+		while (true)
+		{
+			cout << "Podaj typ operacji (przychod/wydatek/anuluj): ";
+			getline(cin, typ_operacji);
+			if (typ_operacji == "przychod" || typ_operacji == "wydatek" || typ_operacji == "anuluj") break;
+			else cout << "Niepoprawny typ operacji" << endl;
+		}
+
+		// jesli nie anulowano
+		if (typ_operacji != "anuluj")
+		{
+			// kwota operacji
+			cout << "Podaj wartosc (kwote) operacji: ";
+
+			wartosc_operacji = GetDouble();
+
+			//aby nie bylo ujemnych wartosci
+			if (wartosc_operacji < 0){
+				wartosc_operacji *= -1;
+				cout << "Wprowadzono wartosc mniejsza od 0. Zmienilismy ja na liczbe przeciwna" << endl;
+			}
+
+			// kategoria operacji
+			cout << "Podaj kategorie operacji: ";
+			// kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
+
+			kategoria_operacji = GetCategory();
+
+			// notatka do operacji
+			cout << "Podaj notatke do operacji: ";
+			getline(cin, notatka_operacji);
+			// dodawanie wpisu do klasy
+			last_id++;
+			Wpis wpis(last_id, typ_operacji, wartosc_operacji, kategoria_operacji, notatka_operacji);
+			// dodawanie wpisu (tu: obiektu klasy) do listy wpisow
+			lista_wpisow.push_back(wpis);
+		}
+	}
+
+	// wyświetlenie listy wpisów [FUNKCJONALNOŚĆ NR 2]
+	static void Wyswietl()
+	{
+		if (!lista_wpisow.empty())
+		{
+			for (auto& wpis : lista_wpisow)
+			{
+				wpis.wyswietl();
+			}
+		}
+		else
+		{
+			cout << "Lista jest pusta! Wczytaj wczesniej utworzona liste za pomoca opcji '7. Odczyt' lub zacznij dodawac wpisy za pomoca '1. Dodaj'." << endl;
+		}
+	}
+	
 	// zapis do pliku CSV [FUNKCJONALNOŚĆ NR 6]
 	static void Zapisz()
 	{
@@ -255,67 +318,10 @@ class UserMenu
 		}
 	}
 
-	// wyświetlenie listy wpisów [FUNKCJONALNOŚĆ NR 2]
-	static void Wyswietl()
+	//filtrowanie wpisów [FUNKCJONALNOŚĆ NR 3]
+	static void Filtruj()
 	{
-		if (!lista_wpisow.empty())
-		{
-			for (auto& wpis : lista_wpisow)
-			{
-				wpis.wyswietl();
-			}
-		}
-		else
-		{
-			cout << "Lista jest pusta! Wczytaj wczesniej utworzona liste za pomoca opcji '7. Odczyt' lub zacznij dodawac wpisy za pomoca '1. Dodaj'." << endl;
-		}
-	}
-
-	// dodawanie wpisu [FUNKCJONALNOŚĆ NR 1]
-	static void DodawanieWpisu()
-	{
-		string typ_operacji, kategoria_operacji, notatka_operacji;
-		double wartosc_operacji;
-
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		// weryfikacja poprawnosci wpisanego typu operacji
-		while (true)
-		{
-			cout << "Podaj typ operacji (przychod/wydatek/anuluj): ";
-			getline(cin, typ_operacji);
-			if (typ_operacji == "przychod" || typ_operacji == "wydatek" || typ_operacji == "anuluj") break;
-			else cout << "Niepoprawny typ operacji" << endl;
-		}
-
-		// jesli nie anulowano
-		if (typ_operacji != "anuluj")
-		{
-			// kwota operacji
-			cout << "Podaj wartosc (kwote) operacji: ";
-
-			wartosc_operacji = GetDouble();
-
-			//aby nie bylo ujemnych wartosci
-			if (wartosc_operacji < 0){
-				wartosc_operacji *= -1;
-				cout << "Wprowadzono wartosc mniejsza od 0. Zmienilismy ja na liczbe przeciwna" << endl;
-			}
-
-			// kategoria operacji
-			cout << "Podaj kategorie operacji: ";
-			// kat operacji - odpowiedzialnosc po stronie uzytkownika (w razie literowek uzytkownik nie stosuje 6. Zapis w celu zapisania do pliku)
-
-			kategoria_operacji = GetCategory();
-
-			// notatka do operacji
-			cout << "Podaj notatke do operacji: ";
-			getline(cin, notatka_operacji);
-			// dodawanie wpisu do klasy
-			last_id++;
-			Wpis wpis(last_id, typ_operacji, wartosc_operacji, kategoria_operacji, notatka_operacji);
-			// dodawanie wpisu (tu: obiektu klasy) do listy wpisow
-			lista_wpisow.push_back(wpis);
-		}
+		string typ_filtrowania;
 	}
 
 	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
@@ -403,6 +409,7 @@ class UserMenu
 			}
 			case 3: //filtruj
 			{
+				Filtruj();
 				break;
 			}
 			case 4: // sortuj
