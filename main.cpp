@@ -381,6 +381,102 @@ class UserMenu
 		cout << "Lista wpisow posortowana!" << endl;
 	}
 
+	//filtrowanie wpisów [FUNKCJONALNOŚĆ NR 3]
+    static void Filtruj()
+    {
+        if (lista_wpisow.empty())
+        {
+            cout << "Lista wpisow jest pusta! " << endl;
+            return;
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+
+        string typ_filtrowania;
+        
+        while (true){
+            cout << "Wybierz po czym chcesz filtrowac:" << endl;
+            cout << "1. data (od - do)" << endl;
+            cout << "2. typ operacji (przychod / wydatek)" << endl;
+            cout << "3. kategoria" << endl;
+            cout << "4. anuluj" << endl;
+            getline(cin, typ_filtrowania);
+            switch (stoi(typ_filtrowania)){
+                case 1: //po dacie
+                {
+                    string od_str, do_str;
+
+                    cout << "Podaj date OD (YYYY-MM-DD): ";
+                    getline(cin, od_str);
+                    cout << "Podaj date DO (YYYY-MM-DD): ";
+                    getline(cin, do_str);
+
+                    DataTime od(od_str);
+                    DataTime doo(do_str);
+
+                    time_t od_t = od.GetTime_T();
+                    time_t do_t = doo.GetTime_T();
+
+                    for (auto& wpis : lista_wpisow)
+                    {
+                        time_t t = wpis.data.GetTime_T();
+                        if (t >= od_t && t <= do_t)
+                        {
+                            wpis.wyswietl();
+                        }
+                    }
+
+                    return;
+                }
+                case 2: //po typie przychodu
+                {
+                    string typ;
+
+                    while (true)
+                    {
+                        cout << "Podaj typ (przychod/wydatek): ";
+                        getline(cin, typ);
+                        if (typ == "przychod" || typ == "wydatek")
+                            break;
+                        cout << "Niepoprawny typ!" << endl;
+                    }
+
+                    for (auto& wpis : lista_wpisow)
+                    {
+                        if (wpis.typ == typ)
+                        {
+                            wpis.wyswietl();
+                        }
+                    }
+
+                    return;
+                }
+                case 3: // po kategorii
+                {
+                    string kat;
+
+                    cout << "Podaj kategorie: ";
+                    getline(cin, kat);
+
+                    for (auto& wpis : lista_wpisow)
+                    {
+                        if (wpis.kategoria == kat)
+                        {
+                            wpis.wyswietl();
+                        }
+                    }
+
+                    return;
+                }
+                default:
+                {
+                    cout << "Anulowano filtrowanie." << endl;
+                    return;
+                }
+            }
+        }
+    }
+
 	static void Statystykuj()
 	{
 		int nPrzychodow = 0;
