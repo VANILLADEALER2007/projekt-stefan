@@ -381,6 +381,54 @@ class UserMenu
 		cout << "Lista wpisow posortowana!" << endl;
 	}
 
+	static void Statystykuj()
+	{
+		int nPrzychodow = 0;
+		int nWydatkow = 0;
+		double sumaPrzychodow = 0.0;
+		double sumaWydatkow = 0.0;
+		double minPrzychodow = INT64_MAX, maxPrzychodow = INT64_MIN, sredniaPrzychodow;
+		double minWydatkow = INT64_MAX, maxWydatkow = INT64_MIN, sredniaWydatkow;
+		for (auto &wpis : lista_wpisow)
+		{
+			if (wpis.typ == "przychod")
+			{
+				nPrzychodow++;
+				sumaPrzychodow += wpis.wartosc;
+				if(wpis.wartosc > maxPrzychodow)
+				{
+					maxPrzychodow = wpis.wartosc;
+				}
+				if(wpis.wartosc < minPrzychodow)
+				{
+					minPrzychodow = wpis.wartosc;
+				}
+			} else{
+				nWydatkow++;
+				sumaWydatkow += wpis.wartosc;
+				if(wpis.wartosc > maxWydatkow)
+				{
+					maxWydatkow = wpis.wartosc;
+				}
+				if(wpis.wartosc < minWydatkow)
+				{
+					minWydatkow = wpis.wartosc;
+				}
+			}
+		}
+		sredniaPrzychodow = sumaPrzychodow / (double)nPrzychodow;
+		sredniaWydatkow = sumaWydatkow / (double)nWydatkow;
+		cout << "liczba przelewow na konto: " << nPrzychodow << " - na laczna kwote: " << sumaPrzychodow << "PLN." << endl;
+		cout << "liczba przelewow z konta: " << nWydatkow << " - na laczna kwote: " << sumaWydatkow << "PLN." << endl;
+		cout << "najmniejszy wydatek byl na kwote: " << minWydatkow << "PLN." << endl;
+		cout << "najmniejszy przychod byl na kwote: " << minPrzychodow << "PLN." << endl;
+		cout << "najwiekszy wydatek byl na kwote: " << maxWydatkow << "PLN." << endl;
+		cout << "najwiekszy przychod byl na kwote: " << maxPrzychodow << "PLN." << endl;
+		cout << "srednia wydatkow wynosi: " << sredniaWydatkow << "PLN." << endl;
+		cout << "srednia przychodow wynosi: " << sredniaPrzychodow << "PLN." << endl;
+
+	}
+
 	public:
 	static void Start()
 	{
@@ -419,6 +467,7 @@ class UserMenu
 			}
 			case 5: // statystyki
 			{
+				Statystykuj();
 				break;
 			}
 			case 6: // zapis
