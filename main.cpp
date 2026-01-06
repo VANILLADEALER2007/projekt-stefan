@@ -319,69 +319,6 @@ class UserMenu
 	}
 
 	//filtrowanie wpisów [FUNKCJONALNOŚĆ NR 3]
-	static void Filtruj()
-	{
-		string typ_filtrowania;
-	}
-
-	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
-	static void Sortuj()
-	{
-		string typ_sortowania, rodzaj_sortowania;
-
-		cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
-		// weryfikacja poprawnosci wpisanego typu sortowania
-		while (true)
-		{
-			cout << "Podaj po czym chcesz sortowac swoje wpisy (data/kwota): ";
-			getline(cin, typ_sortowania);
-			if (typ_sortowania == "data" || typ_sortowania == "kwota") break;
-			else cout << "Niepoprawny typ sortowania" << endl;
-		}
-		// weryfikacja poprawnosci wpisanego rodzaju sortowania
-		while (true)
-		{
-			cout << "Podaj jak chcesz sortowac (rosnaco/malejaco): ";
-			getline(cin, rodzaj_sortowania);
-			if (rodzaj_sortowania == "rosnaco" || rodzaj_sortowania == "malejaco") break;
-			else cout << "Niepoprawny rodzaj sortowania" << endl;
-		}
-		//proces sortowania
-		//sortowanie po dacie
-		if (typ_sortowania == "data"){
-			if (rodzaj_sortowania == "rosnaco"){
-				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
-				{
-					return a.data.GetTime_T() < b.data.GetTime_T();
-				});
-			}
-			else if (rodzaj_sortowania == "malejaco"){
-				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
-				{
-					return a.data.GetTime_T() > b.data.GetTime_T();
-				});
-			}
-		}
-		if (typ_sortowania == "kwota"){
-			if (rodzaj_sortowania == "rosnaco"){
-				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
-				{
-					return a.wartosc < b.wartosc;
-				});
-			}
-			else if (rodzaj_sortowania == "malejaco"){
-				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
-				{
-					return a.wartosc > b.wartosc;
-				});
-
-			}
-		}
-
-		cout << "Lista wpisow posortowana!" << endl;
-	}
-
-	//filtrowanie wpisów [FUNKCJONALNOŚĆ NR 3]
     static void Filtruj()
     {
         if (lista_wpisow.empty())
@@ -476,6 +413,63 @@ class UserMenu
             }
         }
     }
+
+	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
+	static void Sortuj()
+	{
+		string typ_sortowania, rodzaj_sortowania;
+
+		cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+		// weryfikacja poprawnosci wpisanego typu sortowania
+		while (true)
+		{
+			cout << "Podaj po czym chcesz sortowac swoje wpisy (data/kwota): ";
+			getline(cin, typ_sortowania);
+			if (typ_sortowania == "data" || typ_sortowania == "kwota") break;
+			else cout << "Niepoprawny typ sortowania" << endl;
+		}
+		// weryfikacja poprawnosci wpisanego rodzaju sortowania
+		while (true)
+		{
+			cout << "Podaj jak chcesz sortowac (rosnaco/malejaco): ";
+			getline(cin, rodzaj_sortowania);
+			if (rodzaj_sortowania == "rosnaco" || rodzaj_sortowania == "malejaco") break;
+			else cout << "Niepoprawny rodzaj sortowania" << endl;
+		}
+		//proces sortowania
+		//sortowanie po dacie
+		if (typ_sortowania == "data"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() < b.data.GetTime_T();
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() > b.data.GetTime_T();
+				});
+			}
+		}
+		if (typ_sortowania == "kwota"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc < b.wartosc;
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc > b.wartosc;
+				});
+
+			}
+		}
+
+		cout << "Lista wpisow posortowana!" << endl;
+	}
 
 	static void Statystykuj()
 	{
