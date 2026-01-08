@@ -149,6 +149,7 @@ public:
 
 // wektor ktory przechowuje wszystkie wpisy utworzone podczas aktualnej sesji
 vector<Wpis> lista_wpisow;
+
 // inicjalizacja zmiennej last_id (globalna) - zmieniamy jej wartość w funkcji Wczytaj() w klasie UserMenu
 int last_id;
 
@@ -470,6 +471,64 @@ class UserMenu
         }
     }
 
+	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
+	static void Sortuj()
+	{
+		string typ_sortowania, rodzaj_sortowania;
+
+		cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+		// weryfikacja poprawnosci wpisanego typu sortowania
+		while (true)
+		{
+			cout << "Podaj po czym chcesz sortowac swoje wpisy (data/kwota): ";
+			getline(cin, typ_sortowania);
+			if (typ_sortowania == "data" || typ_sortowania == "kwota") break;
+			else cout << "Niepoprawny typ sortowania" << endl;
+		}
+		// weryfikacja poprawnosci wpisanego rodzaju sortowania
+		while (true)
+		{
+			cout << "Podaj jak chcesz sortowac (rosnaco/malejaco): ";
+			getline(cin, rodzaj_sortowania);
+			if (rodzaj_sortowania == "rosnaco" || rodzaj_sortowania == "malejaco") break;
+			else cout << "Niepoprawny rodzaj sortowania" << endl;
+		}
+		//proces sortowania
+		//sortowanie po dacie
+		if (typ_sortowania == "data"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() < b.data.GetTime_T();
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.data.GetTime_T() > b.data.GetTime_T();
+				});
+			}
+		}
+		if (typ_sortowania == "kwota"){
+			if (rodzaj_sortowania == "rosnaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc < b.wartosc;
+				});
+			}
+			else if (rodzaj_sortowania == "malejaco"){
+				sort(lista_wpisow.begin(), lista_wpisow.end(), [](const Wpis& a, const Wpis& b)
+				{
+					return a.wartosc > b.wartosc;
+				});
+
+			}
+		}
+
+		cout << "Lista wpisow posortowana!" << endl;
+	}
+
+	// statystyki [FUNKCJONALNOŚĆ NR 5]
 	static void Statystyka()
 	{
 		int nPrzychodow = 0;
@@ -578,6 +637,75 @@ class UserMenu
 		cout << "srednia wydatkow wynosi: " << sredniaWydatkow << "PLN." << endl;
 		cout << "srednia przychodow wynosi: " << sredniaPrzychodow << "PLN." << endl;
 		cout << "bilans miesieczny: " << sumaPrzychodow - sumaWydatkow << "PLN." << endl;
+	}
+
+	// zapis do pliku CSV [FUNKCJONALNOŚĆ NR 6]
+	static void Zapisz()
+	{
+		ofstream plik("Data.txt", ofstream::trunc);
+
+		if (!plik.is_open())
+		{
+			cout << "Nie mozna otworzyc pliku do zapisu!" << endl;
+		}
+		else
+		{
+
+			for (auto& wpis : lista_wpisow)
+			{
+				wpis.zapiszDoCSV(plik);
+			}
+
+			plik.close();
+			cout << "Zapisano dane do pliku Data.txt" << endl;
+		}
+	}
+
+	// wczytywanie z pliku CSV [FUNKCJONALNOŚĆ NR 7]
+	static void Wczytaj()
+	{
+		ifstream plik("Data.txt");
+
+		if (!plik.is_open())
+		{
+			cout << "Nie mozna otworzyc pliku do odczytu!" << endl;
+		}
+		else
+		{
+			lista_wpisow.clear();
+			string linia;
+			while (getline(plik, linia))
+			{
+				// Zakładamy format CSV: id,data,typ,wartosc,kategoria,notatka
+				stringstream ss(linia);
+				string id_str, data_str, typ, wartosc_str, kategoria, notatka;
+
+				getline(ss, id_str, ',');
+				getline(ss, data_str, ',');
+				getline(ss, typ, ',');
+				getline(ss, wartosc_str, ',');
+				getline(ss, kategoria, ',');
+				getline(ss, notatka);
+
+				unsigned int id = stoi(id_str);
+
+				DataTime data = DataTime(data_str);
+
+				double wartosc = stod(wartosc_str);
+
+				Wpis wpis(id, data, typ, wartosc, kategoria, notatka);
+				lista_wpisow.push_back(wpis); // można użyć push_back, żeby zachować kolejność z pliku
+			}
+			plik.close();
+
+			for (auto& a : lista_wpisow)
+			{
+				if (last_id < a.id)
+					last_id = a.id;
+			}
+
+			cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
+		}
 	}
 
 	public:
