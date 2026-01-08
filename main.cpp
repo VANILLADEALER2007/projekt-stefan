@@ -317,13 +317,6 @@ class UserMenu
 			cout << "Dane zostaly wczytane z pliku Data.txt" << endl;
 		}
 	}
-
-	//filtrowanie wpisów [FUNKCJONALNOŚĆ NR 3]
-	static void Filtruj()
-	{
-		string typ_filtrowania;
-	}
-
 	// sortowanie wpisów [FUNKCJONALNOŚĆ NR 4]
 	static void Sortuj()
 	{
@@ -477,7 +470,7 @@ class UserMenu
         }
     }
 
-	static void Statystykuj()
+	static void Statystyka()
 	{
 		int nPrzychodow = 0;
 		int nWydatkow = 0;
@@ -514,6 +507,7 @@ class UserMenu
 		}
 		sredniaPrzychodow = sumaPrzychodow / (double)nPrzychodow;
 		sredniaWydatkow = sumaWydatkow / (double)nWydatkow;
+		cout << "Statystyka ogólna: " << endl;
 		cout << "liczba przelewow na konto: " << nPrzychodow << " - na laczna kwote: " << sumaPrzychodow << "PLN." << endl;
 		cout << "liczba przelewow z konta: " << nWydatkow << " - na laczna kwote: " << sumaWydatkow << "PLN." << endl;
 		cout << "najmniejszy wydatek byl na kwote: " << minWydatkow << "PLN." << endl;
@@ -522,7 +516,68 @@ class UserMenu
 		cout << "najwiekszy przychod byl na kwote: " << maxPrzychodow << "PLN." << endl;
 		cout << "srednia wydatkow wynosi: " << sredniaWydatkow << "PLN." << endl;
 		cout << "srednia przychodow wynosi: " << sredniaPrzychodow << "PLN." << endl;
+		cout << "bilans ogolny: " << sumaPrzychodow - sumaWydatkow << "PLN." << endl << endl;
 
+
+		std::time_t t = std::time(0);
+    	std::tm* now = std::localtime(&t);
+		int currentYear = now->tm_year;
+		int currentMonth = now->tm_mon;
+		nPrzychodow = 0;
+		nWydatkow = 0;
+		sumaPrzychodow = 0.0;
+		sumaWydatkow = 0.0;
+		minPrzychodow = INT64_MAX;
+		maxPrzychodow = INT64_MIN;
+		minWydatkow = INT64_MAX;
+		maxWydatkow = INT64_MIN;
+		
+		for (auto &wpis : lista_wpisow)
+		{
+			time_t t2 = wpis.data.GetTime_T();
+			tm* t2c = localtime(&t2);
+			if (t2c->tm_mon == currentMonth && t2c->tm_year == currentYear)
+			{
+				if (wpis.typ == "przychod")
+				{
+					nPrzychodow++;
+					sumaPrzychodow += wpis.wartosc;
+					if (wpis.wartosc > maxPrzychodow)
+					{
+						maxPrzychodow = wpis.wartosc;
+					}
+					if (wpis.wartosc < minPrzychodow)
+					{
+						minPrzychodow = wpis.wartosc;
+					}
+				}
+				else
+				{
+					nWydatkow++;
+					sumaWydatkow += wpis.wartosc;
+					if (wpis.wartosc > maxWydatkow)
+					{
+						maxWydatkow = wpis.wartosc;
+					}
+					if (wpis.wartosc < minWydatkow)
+					{
+						minWydatkow = wpis.wartosc;
+					}
+				}
+			}
+		}
+		cout << "Statystyka miesieczna: " << endl;
+		sredniaPrzychodow = sumaPrzychodow / (double)nPrzychodow;
+		sredniaWydatkow = sumaWydatkow / (double)nWydatkow;
+		cout << "liczba przelewow na konto: " << nPrzychodow << " - na laczna kwote: " << sumaPrzychodow << "PLN." << endl;
+		cout << "liczba przelewow z konta: " << nWydatkow << " - na laczna kwote: " << sumaWydatkow << "PLN." << endl;
+		cout << "najmniejszy wydatek byl na kwote: " << minWydatkow << "PLN." << endl;
+		cout << "najmniejszy przychod byl na kwote: " << minPrzychodow << "PLN." << endl;
+		cout << "najwiekszy wydatek byl na kwote: " << maxWydatkow << "PLN." << endl;
+		cout << "najwiekszy przychod byl na kwote: " << maxPrzychodow << "PLN." << endl;
+		cout << "srednia wydatkow wynosi: " << sredniaWydatkow << "PLN." << endl;
+		cout << "srednia przychodow wynosi: " << sredniaPrzychodow << "PLN." << endl;
+		cout << "bilans miesieczny: " << sumaPrzychodow - sumaWydatkow << "PLN." << endl;
 	}
 
 	public:
@@ -563,7 +618,7 @@ class UserMenu
 			}
 			case 5: // statystyki
 			{
-				Statystykuj();
+				Statystyka();
 				break;
 			}
 			case 6: // zapis
